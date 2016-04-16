@@ -82,7 +82,7 @@ try:
             collection.add(next_index)
             raw_input()
 
-except EOFError, KeyboardInterrupt:
+except (EOFError, KeyboardInterrupt):
     print "Saving..."
     with open(LIST_SAVE_FILE, 'w') as fi:
         fi.write('\n'.join(todolist))
