@@ -1,0 +1,90 @@
+#!/usr/bin/python
+# coding: utf-8
+
+import random
+
+# Add another class to collectibles in order to make your own things to collect,
+# then modify these lines to use it.
+# (Pokemon, anyone?)
+from collectibles.chinese import Chinese
+my_collectible = Chinese()
+
+# Populate this with a filename at which to save your list of to-do items.
+LIST_SAVE_FILE = 'list-save'
+assert LIST_SAVE_FILE != '', "Please edit this script to provide a filename to save your to-do list items at."
+
+# Populate this with a filename at which to save data regarding the items
+# you have collected.
+COLLECTION_SAVE_FILE = 'game-save'
+assert COLLECTION_SAVE_FILE != '', "Please edit this script to provide a filename to save your game data at."
+
+# Load saves.
+try:
+    with open(LIST_SAVE_FILE, 'r') as fi:
+           todolist = fi.read().strip().split('\n')
+except IOError:
+    print "Warning: %s not found; starting list save from scratch." % LIST_SAVE_FILE
+    todolist = []
+
+try:
+    with open(COLLECTION_SAVE_FILE, 'r') as fi:
+        contents = fi.read().strip()
+        if len(contents) > 0:
+            collection = set(int(i) for i in contents.split('\n'))
+        else:
+            collection = set()
+except IOError:
+    print "Warning: %s not found; starting game save from scratch." % COLLECTION_SAVE_FILE
+    collection = set()
+
+
+print "Hello!"
+try:
+    while True:
+        print "\nYou've collected:", my_collectible.display_many(collection)
+
+        if '' in todolist:
+            todolist.remove('')
+        if len(todolist) == 0:
+            todolist = ['make a new to-do list task']
+
+        print "\nYou have the following things on your to do list:"
+        print '; '.join(todolist)
+        current_task = random.choice(todolist)
+        print "\nCurrent task:", current_task.upper()
+        print "Enter 'done' when done, 'del' to delete. Enter anything else to add a new task."
+        response = ""
+
+        while response != "done":
+            response = raw_input(">>> ")
+            if response != "done":
+                if response == "del":
+                    todolist.remove(current_task)
+                    if len(todolist) == 0:
+                        todolist = ['make a new to-do list task']
+                    current_task = random.choice(todolist)
+                    print "Current task:", current_task.upper()
+                    print "Enter 'done' when done, 'del' to delete. Enter anything else to add a new task."
+                elif response.strip() != '':
+                    todolist.append(response)
+
+        if current_task != "":
+            print "\n\nSweet! You did the thing!"
+            todolist.remove(current_task)
+            raw_input()
+            next_index = my_collectible.pick_a_thing()
+            print my_collectible.display_one(next_index)
+            raw_input()
+            if next_index in collection:
+                print "You already had this one."
+            else:
+                print "Yay! This one's new!"
+            collection.add(next_index)
+            raw_input()
+
+except EOFError, KeyboardInterrupt:
+    print "Saving..."
+    with open(LIST_SAVE_FILE, 'w') as fi:
+        fi.write('\n'.join(todolist))
+    with open(COLLECTION_SAVE_FILE, 'w') as fi:
+        fi.write('\n'.join(str(i) for i in collection))
